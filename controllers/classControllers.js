@@ -284,7 +284,12 @@ module.exports.getAssignmentFileController = async (req, res, next) => {
     var file = await fs.createReadStream(
       path.join(__dirname, "../", fetchedAssignment.path)
     );
-    file.pipe(res);
+    file.on("open", () => {
+      file.pipe(res);
+    });
+    file.on("error", (err) => {
+      throw new Error(err);
+    });
   } catch (err) {
     log.error(err.message);
     return res.status(401).json({
