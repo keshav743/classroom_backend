@@ -3,6 +3,7 @@ const log = require("log-beautify");
 const path = require("path");
 const multer = require("multer");
 const uuid = require("uuid");
+const PORT = process.env.PORT || 5000;
 
 const mongoose = require("mongoose");
 const cors = require("cors");
@@ -57,7 +58,7 @@ app.use("/api/classroom", classRoutes),
       "mongodb+srv://keshav_23:keshav%4023@cluster0.iflqo.mongodb.net/assignmentDB?retryWrites=true&w=majority"
     )
     .then((_) => {
-      app.listen(3000, () => {
+      app.listen(PORT, () => {
         log.success("Server Started at Port 3000");
       });
     });
