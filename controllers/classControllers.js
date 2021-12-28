@@ -286,7 +286,12 @@ module.exports.getAssignmentFileController = async (req, res, next) => {
         path.join(__dirname, "..", path.normalize(fetchedAssignment.path))
       )
     );
-    file.pipe(res);
+    file.on("open", () => {
+      file.pipe(res);
+    });
+    file.on("error", (err) => {
+      throw new Error("Path Error");
+    });
   } catch (err) {
     log.error(err.message);
     return res.status(401).json({
