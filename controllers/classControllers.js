@@ -282,7 +282,7 @@ module.exports.getAssignmentFileController = async (req, res, next) => {
     });
     console.log(path.join(__dirname, "../", fetchedAssignment.path));
     var file = await fs.createReadStream(
-      path.join(__dirname, fetchedAssignment.path)
+      `${__dirname}\ ${fetchedAssignment.path}`
     );
     file.pipe(res);
   } catch (err) {
