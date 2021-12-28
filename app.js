@@ -8,6 +8,8 @@ const PORT = process.env.PORT || 3000;
 const mongoose = require("mongoose");
 const cors = require("cors");
 
+const app = express();
+
 app.use(function (req, res, next) {
   res.setHeader(
     "Access-Control-Allow-Origin",
@@ -24,8 +26,6 @@ app.use(function (req, res, next) {
   res.setHeader("Access-Control-Allow-Credentials", true);
   next();
 });
-
-const app = express();
 
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
