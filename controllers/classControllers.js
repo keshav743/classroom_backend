@@ -280,14 +280,14 @@ module.exports.getAssignmentFileController = async (req, res, next) => {
     const fetchedAssignment = await Assignment.findOne({
       _id: req.params.assignmentId,
     });
-    console.log(path.join(__dirname, "../", fetchedAssignment.path));
     var file = await fs.createReadStream(
-      path.normalize(__dirname + `../${fetchedAssignment.path}`)
+      path.join(__dirname, "../", fetchedAssignment.path)
     );
     file.on("open", () => {
       file.pipe(res);
     });
     file.on("error", (err) => {
+      console.log(err);
       throw new Error(err);
     });
   } catch (err) {
