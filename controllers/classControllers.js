@@ -284,7 +284,7 @@ module.exports.getAssignmentFileController = async (req, res, next) => {
     var file = await fs.createReadStream(
       path
         .join(__dirname, "../", path.normalize(fetchedAssignment.path))
-        .replace("\\", "/")
+        .replace("/", "\\")
     );
     file.pipe(res);
   } catch (err) {
