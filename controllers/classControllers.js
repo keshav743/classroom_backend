@@ -290,7 +290,7 @@ module.exports.getAssignmentFileController = async (req, res, next) => {
       file.pipe(res);
     });
     file.on("error", (err) => {
-      throw new Error("Path Error");
+      throw new Error("Path Error!!");
     });
   } catch (err) {
     log.error(err.message);
