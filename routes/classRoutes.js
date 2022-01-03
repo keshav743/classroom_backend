@@ -72,12 +72,6 @@ router.get(
 );
 
 router.get(
-  "/getAssignmentFile/:userId/:roomId/:assignmentId",
-  [checkToken, checkUser],
-  classController.getAssignmentFileController
-);
-
-router.get(
   "/getResponseFile/:userId/:roomId/:responseId",
   [checkToken, checkUser],
   classController.getResponseFileController

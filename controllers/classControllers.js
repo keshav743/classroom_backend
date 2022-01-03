@@ -3,6 +3,7 @@ const mongoose = require("mongoose");
 const Activity = require("../models/activity");
 const fs = require("fs");
 const path = require("path");
+const { getStorage } = require("firebase-admin/storage");
 const Assignment = require("../models/assignment");
 const Classroom = require("../models/classroom");
 const Response = require("../models/response.js");
@@ -208,11 +209,15 @@ module.exports.sendMessageController = async (req, res, next) => {
 module.exports.createAssignmentController = async (req, res, next) => {
   try {
     const file = req.files.assignment;
+    const bucket = getStorage().bucket();
+    await bucket.upload(path.join(__dirname, "../", file[0].path), {
+      destination: `assignments/${file[0].filename}`,
+    });
     const preAssignment = await Assignment.create({
       title: req.body.title,
       instructions: req.body.instructions,
       createdBy: req.body.userId,
-      path: file[0].path,
+      path: `assignments/${file[0].filename}`,
       belongsToRoom: req.body.roomId,
       deadline: req.body.deadline,
     });
@@ -260,35 +265,18 @@ module.exports.getAssignmentController = async (req, res, async) => {
         },
       })
       .populate("submittedPeople");
+    const bucket = getStorage().bucket();
+    const file = bucket.file(fetchedAssignment.path);
+    const fileUrl = await file.getSignedUrl({
+      action: "read",
+      expires: "03-09-2025",
+    });
     return res.status(201).json({
       status: "success",
       data: {
         assignment: fetchedAssignment,
+        fileUrl: fileUrl[0],
       },
-    });
-  } catch (err) {
-    log.error(err.message);
-    return res.status(401).json({
-      status: "failure",
-      err: err.message,
-    });
-  }
-};
-
-module.exports.getAssignmentFileController = async (req, res, next) => {
-  try {
-    const fetchedAssignment = await Assignment.findOne({
-      _id: req.params.assignmentId,
-    });
-    var file = await fs.createReadStream(
-      path.join(__dirname, "../", fetchedAssignment.path)
-    );
-    file.on("open", () => {
-      file.pipe(res);
-    });
-    file.on("error", (err) => {
-      console.log(err);
-      throw new Error(err);
     });
   } catch (err) {
     log.error(err.message);
@@ -301,14 +289,21 @@ module.exports.getAssignmentFileController = async (req, res, next) => {
 
 module.exports.getResponseFileController = async (req, res, next) => {
   try {
-    const fetchedAssignment = await Response.findOne({
+    const fetchedResponse = await Response.findOne({
       _id: req.params.responseId,
     });
-    console.log(`${__dirname}/${fetchedAssignment.path}`);
-    var file = fs.createReadStream(
-      path.join(__dirname, "../", fetchedAssignment.path)
-    );
-    file.pipe(res);
+    const bucket = getStorage().bucket();
+    const file = bucket.file(fetchedResponse.path);
+    const fileUrl = await file.getSignedUrl({
+      action: "read",
+      expires: "03-09-2025",
+    });
+    return res.status(201).json({
+      status: "success",
+      data: {
+        fileUrl: fileUrl[0],
+      },
+    });
   } catch (err) {
     log.error(err.message);
     return res.status(401).json({
@@ -319,14 +314,17 @@ module.exports.getResponseFileController = async (req, res, next) => {
 };
 
 module.exports.submitAssignmentController = async (req, res, next) => {
-  const file = req.files.response;
-  console.log(file);
   try {
+    const file = req.files.response;
+    const bucket = getStorage().bucket();
+    await bucket.upload(path.join(__dirname, "../", file[0].path), {
+      destination: `responses/${file[0].filename}`,
+    });
     const createdResponse = await Response.create({
       questionPaperID: req.params.assignmentId,
       submittedBy: req.params.userId,
       belongsToRoom: req.params.roomId,
-      path: file[0].path,
+      path: `responses/${file[0].filename}`,
     });
     const savedResponse = await createdResponse.save();
     const message = await Activity.create({
@@ -482,3 +480,27 @@ module.exports.getHistoryController = async (req, res, next) => {
     });
   }
 };
+
+// module.exports.getAssignmentFileController = async (req, res, next) => {
+//   try {
+//     const fetchedAssignment = await Assignment.findOne({
+//       _id: req.params.assignmentId,
+//     });
+//     var file = await fs.createReadStream(
+//       path.join(__dirname, "../", fetchedAssignment.path)
+//     );
+//     file.on("open", () => {
+//       file.pipe(res);
+//     });
+//     file.on("error", (err) => {
+//       console.log(err);
+//       throw new Error(err);
+//     });
+//   } catch (err) {
+//     log.error(err.message);
+//     return res.status(401).json({
+//       status: "failure",
+//       err: err.message,
+//     });
+//   }
+// };

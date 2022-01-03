@@ -10,6 +10,14 @@ const cors = require("cors");
 
 const app = express();
 
+const { initializeApp, cert } = require("firebase-admin/app");
+const serviceAccount = require("./ServiceKey.json");
+
+initializeApp({
+  credential: cert(serviceAccount),
+  storageBucket: "classroom-vue-74c92.appspot.com",
+});
+
 const fileStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     if (file.fieldname == "assignment") {
